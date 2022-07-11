@@ -1599,13 +1599,15 @@ void ExitNMV(NLt *nlt, MLt *mlt, VLt *vlt, int e) {
 }
 int main()
 {
-    char *gfn = "sequence.fasta", *tfn = "trs.txt", *ifn = "interiors.txt";
+    //char *gfn = "sequence.fasta", *tfn = "trs.txt", *ifn = "interiors.txt";
+    char *tfn = "trs.txt", *ifn = "interiors.txt";
 
     int  e = 0, opt = 0, len = 0;
 
     long long int tsize = 0;
 
     float tmin, tmax;
+    char gfn[256];
 
     NLt gl; InitNLt(&gl);
     NLt gl2; InitNLt(&gl2);
@@ -1617,6 +1619,21 @@ int main()
     printf("2. Analysis of the circular case with conditions \n\n");
     printf("Select option: ");
 
+    // debug part
+    // tmin = 3.0;
+    // tmax = 6.0;
+    // gfn = "sequence.fasta";
+
+    // if ((tsize = ImportGenome(gfn,&gl)) < 0) ExitN(&gl,(int)tsize);
+    // if ((len = ImportTRSToMLt(tfn,&ml)) < 0) ExitNM(&gl,&ml,len);
+    // if ((e = LC_TRSPositionsFindAndSaveToVLt(&ml,&gl,&vl,len)) < 0) ExitNMV(&gl,&ml,&vl,e);
+    // if ((e = LC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tmin,tmax)) < 0) ExitNMV(&gl,&ml,&vl,e);
+    // FreeNLt(&gl);
+    // FreeMLt(&ml);
+    // FreeVLt(&vl);
+    // return 0;
+
+
     scanf("%i",&opt);
 
         switch (opt)
@@ -1627,6 +1644,8 @@ int main()
             case 1: printf("\n\n Set the minimum (Min) and the maximum (Max) lenght of interior:\n");
                     printf("\n  Min="); scanf("%f",&tmin);
                     printf("\n  Max="); scanf("%f",&tmax);
+                    printf("\n  Genom file="); scanf("%s", &gfn);
+                    //printf("\n The fasta file: %s", &gfn);
 
                     if (tmin < 1) {
                         printf("\n Error: Min < 1\n\n");
@@ -1639,14 +1658,25 @@ int main()
                     }
 
                     printf("\n\nSTART\n");
+                    
+                    if ((tsize = ImportGenome(gfn,&gl)) < 0) {
+                        printf("\n issue in importing the genome...");
+                        ExitN(&gl,(int)tsize);
+                    }
 
-                    if ((tsize = ImportGenome(gfn,&gl)) < 0) ExitN(&gl,(int)tsize);
+                    if ((len = ImportTRSToMLt(tfn,&ml)) < 0) {
+                        printf("\n issue in importing the TRS file...");
+                        ExitNM(&gl,&ml,len);
+                    }
+                    if ((e = LC_TRSPositionsFindAndSaveToVLt(&ml,&gl,&vl,len)) < 0) {
+                        printf("\n issue in finding the sequence...");
+                        ExitNMV(&gl,&ml,&vl,e);
+                    }
 
-                    if ((len = ImportTRSToMLt(tfn,&ml)) < 0) ExitNM(&gl,&ml,len);
-
-                    if ((e = LC_TRSPositionsFindAndSaveToVLt(&ml,&gl,&vl,len)) < 0) ExitNMV(&gl,&ml,&vl,e);
-
-                    if ((e = LC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tmin,tmax)) < 0) ExitNMV(&gl,&ml,&vl,e);
+                    if ((e = LC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tmin,tmax)) < 0) {
+                        printf("\n issue in importing the saving the resulting file...");
+                        ExitNMV(&gl,&ml,&vl,e);
+                    }
 
                     printf("END\n");
 
@@ -1656,6 +1686,7 @@ int main()
             case 2: printf("\n\n Set the minimum (Min) and the maximum (Max) lenght of interior:\n");
                     printf("\n  Min="); scanf("%f",&tmin);
                     printf("\n  Max="); scanf("%f",&tmax);
+                    printf("\n  Genom file="); scanf("%s",&gfn);
 
                     if (tmin < 1) {
                         printf("\n Error: Min < 1\n\n");
