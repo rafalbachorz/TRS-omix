@@ -307,15 +307,16 @@ int AddPtToVLt(VLt *vlt, int inf, int no, int cl, long long int ps, long long in
 | a file.                                                                   |
 +---------------------------------------------------------------------------+
 */
-int PrtNLtToFile(FILE *f, NPt *npt) {
+int PrtNLtToFile(FILE *f, NPt *npt, char *file_content) {
 
     NPt *ctnpt = npt;
 
     int ret = 1;
-
+    char single_char;
     while (ctnpt != NULL) {
-
-        if (fprintf(f,"%c",ctnpt->sgn) < 0) {
+        single_char = ctnpt->sgn;
+        strcat(file_content, &single_char);
+        if (fprintf(f,"%c",single_char) < 0) {
             ret = -1;
             break;
         }
@@ -342,6 +343,7 @@ int PrtNLtToBuffer(char *buffer, NPt *npt) {
     while (ctnpt != NULL) {
         l = sprintf(line, "%c",ctnpt->sgn);
         l = strcat(buffer, line);
+        printf("sgn %s", line);
         if (l < 0) {
             ret = -1;
             break;
@@ -1162,8 +1164,8 @@ int LC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int m
                 }
 
                 for(int i = 1; i <= (abs(ctvpt->pe - ctvpt->ps + 1)/3); i++) {
-                    PrtNLtToBuffer(file_content, ctvpt->nlt->head);
-                    if (PrtNLtToFile(f,ctvpt->nlt->head) < 0) {
+                    //PrtNLtToBuffer(file_content, ctvpt->nlt->head);
+                    if (PrtNLtToFile(f,ctvpt->nlt->head,file_content) < 0) {
                         ret = -300;
                         break;
                     }
@@ -1211,8 +1213,8 @@ int LC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int m
                 }
 
                 for(int i = 1; i <= (abs(ctvpt->next->pe - ctvpt->next->ps + 1)/3); i++) {
-                    PrtNLtToBuffer(file_content, ctvpt->next->nlt->head);
-                    if (PrtNLtToFile(f,ctvpt->next->nlt->head) < 0) {
+                    //PrtNLtToBuffer(file_content, ctvpt->next->nlt->head);
+                    if (PrtNLtToFile(f,ctvpt->next->nlt->head, file_content) < 0) {
                         ret = -300;
                         break;
                     }
@@ -1273,18 +1275,20 @@ int LC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int m
 |  interiors.txt for the circular case with conditions.                     |
 +---------------------------------------------------------------------------+
 */
-int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int size, long long int min, long long int max) {
+int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int size, long long int min, long long int max, char *file_content) {
 
     NPt *ctnpt = nlt->head;
     VPt *ctvpt = vlt->head;
-    char *file_content;
 
     int ret = 1;
+    int l = 0;
 
     FILE *f;
+    char *line = (char*)calloc(256, sizeof(char));
 
     if ((f = fopen(ifn,"w")) != NULL) {
-        //file_content 
+        char header[] = "L-NoClass;L-No;LFS;Len(LFS);L-POS(LFS);R-POS(LFS);R-NoClass;R-No;RFS;Len(RFS);L-POS(RFS);R-POS(RFS);>SEQ;Len(SEQ)\n";
+        strcat(file_content, header); 
         if (fprintf(f,"L-NoClass;L-No;LFS;Len(LFS);L-POS(LFS);R-POS(LFS);R-NoClass;R-No;RFS;Len(RFS);L-POS(RFS);R-POS(RFS);>SEQ;Len(SEQ)\n") < 0) {
             ret = -320;
             ctvpt->next = NULL;
@@ -1299,13 +1303,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     if ((ctvpt->cl > 0)&&(ctvpt->cl < 10)) {
 
                         if ((ctvpt->no > 0)&&(ctvpt->no < 10)) {
-
+                            l = sprintf(line, "0%d;0%d;",ctvpt->cl,ctvpt->no);
+                            strcat(file_content, line);
                             if (fprintf(f,"0%d;0%d;",ctvpt->cl,ctvpt->no) < 0) {
                                 ret = -320;
                                 break;
                             }
                         }
                         else {
+                            l = sprintf(line, "0%d;%d;",ctvpt->cl,ctvpt->no);
+                            strcat(file_content, line);
                             if (fprintf(f,"0%d;%d;",ctvpt->cl,ctvpt->no) < 0) {
                                 ret = -320;
                                 break;
@@ -1315,12 +1322,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     else {
 
                         if ((ctvpt->no > 0)&&(ctvpt->no < 10)) {
+                            l = sprintf(line, "%d;0%d;",ctvpt->cl,ctvpt->no);
+                            strcat(file_content, line);
                             if (fprintf(f,"%d;0%d;",ctvpt->cl,ctvpt->no) < 0) {
                                 ret = -320;
                                 break;
                             }
                         }
                         else {
+                            l = sprintf(line, "%d;%d;",ctvpt->cl,ctvpt->no);
+                            strcat(file_content, line);
                             if (fprintf(f,"%d;%d;",ctvpt->cl,ctvpt->no) < 0) {
                                 ret = -320;
                                 break;
@@ -1329,8 +1340,8 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     }
 
                     for(int i = 1; i <= (abs(ctvpt->pe - ctvpt->ps + 1)/3); i++) {
-
-                        if (PrtNLtToFile(f,ctvpt->nlt->head) < 0) {
+                        //PrtNLtToBuffer(file_content, ctvpt->next->nlt->head);
+                        if (PrtNLtToFile(f,ctvpt->nlt->head, file_content) < 0) {
                             ret = -320;
                             break;
                         }
@@ -1341,14 +1352,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     if ((ctvpt->next->cl > 0)&&(ctvpt->next->cl < 10)) {
 
                         if ((ctvpt->next->no > 0)&&(ctvpt->next->no < 10)) {
-
+                            l = sprintf(line, ";%d;%d;%d;0%d;0%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no);
+                            strcat(file_content, line);
                             if (fprintf(f,";%d;%d;%d;0%d;0%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no) < 0) {
                                 ret = -320;
                                 break;
                             }
                         }
                         else {
-
+                            l = sprintf(line, ";%d;%d;%d;0%d;%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no);
+                            strcat(file_content, line);
                             if (fprintf(f,";%d;%d;%d;0%d;%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no) < 0) {
                                 ret = -320;
                                 break;
@@ -1357,15 +1370,17 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     }
                     else {
 
-                        if ((ctvpt->next->no > 0)&&(ctvpt->next->no < 10)) {
-
+                            if ((ctvpt->next->no > 0)&&(ctvpt->next->no < 10)) {
+                            l = sprintf(line, ";%d;%d;%d;%d;0%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no);
+                            strcat(file_content, line);
                             if (fprintf(f,";%d;%d;%d;%d;0%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no) < 0) {
                                 ret = -320;
                                 break;
                             }
                         }
                         else {
-
+                            l = sprintf(line, ";%d;%d;%d;%d;%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no);
+                            strcat(file_content, line);
                             if (fprintf(f,";%d;%d;%d;%d;%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no) < 0) {
                                 ret = -320;
                                 break;
@@ -1374,15 +1389,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     }
 
                     for(int i = 1; i <= (abs(ctvpt->next->pe - ctvpt->next->ps + 1)/3); i++) {
-
-                        if (PrtNLtToFile(f,ctvpt->next->nlt->head) < 0) {
+                        //PrtNLtToBuffer(file_content, ctvpt->next->nlt->head);
+                        if (PrtNLtToFile(f,ctvpt->next->nlt->head, file_content) < 0) {
                             ret = -320;
                             break;
                         }
                     }
 
                     if (ret == -320) break;
-
+                    l = sprintf(line, ";%d;%d;%d;>",abs(ctvpt->next->pe - ctvpt->next->ps + 1),ctvpt->next->ps,ctvpt->next->pe);
+                    strcat(file_content, line);
                     if (fprintf(f,";%d;%d;%d;>",abs(ctvpt->next->pe - ctvpt->next->ps + 1),ctvpt->next->ps,ctvpt->next->pe) < 0) {
                         ret = -320;
                         break;
@@ -1397,7 +1413,8 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     int li = 0;
 
                     while (ctnpt->no != ctvpt->next->ps) {
-
+                        l = sprintf(line, "%c",ctnpt->sgn);
+                        strcat(file_content, line);
                         if (fprintf(f,"%c",ctnpt->sgn) < 0) {
                             ret = -320;
                             break;
@@ -1409,7 +1426,8 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     }
 
                     if (ret == -320) break;
-
+                    l = sprintf(line, ";%d\n",li);
+                    strcat(file_content, line);
                     if (fprintf(f,";%d\n",li) < 0) {
                         ret = -320;
                         break;
@@ -1425,14 +1443,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     if ((ctvpt->cl > 0)&&(ctvpt->cl < 10)) {
 
                         if ((ctvpt->no > 0)&&(ctvpt->no < 10)) {
-
+                            l = sprintf(line, "0%d;0%d;",ctvpt->cl,ctvpt->no);
+                            strcat(file_content, line);
                             if (fprintf(f,"0%d;0%d;",ctvpt->cl,ctvpt->no) < 0) {
                                 ret = -320;
                                 break;
                             }
                         }
                         else {
-
+                            l = sprintf(line, "0%d;%d;",ctvpt->cl,ctvpt->no);
+                            strcat(file_content, line);
                             if (fprintf(f,"0%d;%d;",ctvpt->cl,ctvpt->no) < 0) {
                                 ret = -320;
                                 break;
@@ -1442,14 +1462,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     else {
 
                         if ((ctvpt->no > 0)&&(ctvpt->no < 10)) {
-
+                            l = sprintf(line, "%d;0%d;",ctvpt->cl,ctvpt->no);
+                            strcat(file_content, line);
                             if (fprintf(f,"%d;0%d;",ctvpt->cl,ctvpt->no) < 0) {
                                 ret = -320;
                                 break;
                             }
                         }
                         else {
-
+                            l = sprintf(line, "%d;%d;",ctvpt->cl,ctvpt->no);
+                            strcat(file_content, line);
                             if (fprintf(f,"%d;%d;",ctvpt->cl,ctvpt->no) < 0) {
                                 ret = -320;
                                 break;
@@ -1458,8 +1480,8 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     }
 
                     for(int i = 1; i <= (abs(ctvpt->pe - ctvpt->ps + 1)/3); i++) {
-
-                        if (PrtNLtToFile(f,ctvpt->nlt->head) < 0) {
+                        //PrtNLtToBuffer(file_content, ctvpt->next->nlt->head);
+                        if (PrtNLtToFile(f,ctvpt->nlt->head, file_content) < 0) {
                             ret = -320;
                             break;
                         }
@@ -1470,13 +1492,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     if ((ctvpt->next->cl > 0)&&(ctvpt->next->cl < 10)) {
 
                         if ((ctvpt->next->no > 0)&&(ctvpt->next->no < 10)) {
-
+                            l = sprintf(line, ";%d;%d;%d;0%d;0%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no);
+                            strcat(file_content, line);
                             if (fprintf(f,";%d;%d;%d;0%d;0%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no) < 0) {
                                 ret = -320;
                                 break;
                             }
                         }
                         else {
+                            l = sprintf(line, ";%d;%d;%d;0%d;%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no);
+                            strcat(file_content, line);
                             if (fprintf(f,";%d;%d;%d;0%d;%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no) < 0) {
                                 ret = -320;
                                 break;
@@ -1486,14 +1511,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     else {
 
                         if ((ctvpt->next->no > 0)&&(ctvpt->next->no < 10)) {
-
+                            l = sprintf(line, ";%d;%d;%d;%d;0%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no);
+                            strcat(file_content, line);
                             if (fprintf(f,";%d;%d;%d;%d;0%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no) < 0) {
                                 ret = -320;
                                 break;
                             }
                         }
                         else {
-
+                            l = sprintf(line, ";%d;%d;%d;%d;%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no);
+                            strcat(file_content, line);
                             if (fprintf(f,";%d;%d;%d;%d;%d;",abs(ctvpt->pe - ctvpt->ps + 1),ctvpt->ps,ctvpt->pe,ctvpt->next->cl,ctvpt->next->no) < 0) {
                                 ret = -320;
                                 break;
@@ -1502,15 +1529,16 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     }
 
                     for(int i = 1; i <= (abs(ctvpt->next->pe - ctvpt->next->ps + 1)/3); i++) {
-
-                        if (PrtNLtToFile(f,ctvpt->next->nlt->head) < 0) {
+                        //PrtNLtToBuffer(file_content, ctvpt->next->nlt->head);
+                        if (PrtNLtToFile(f,ctvpt->next->nlt->head, file_content) < 0) {
                             ret = -320;
                             break;
                         }
                     }
 
                     if (ret == -320) break;
-
+                    l = sprintf(line, ";%d;%d;%d;>",abs(ctvpt->next->pe - ctvpt->next->ps + 1),ctvpt->next->ps,ctvpt->next->pe);
+                    strcat(file_content, line);
                     if (fprintf(f,";%d;%d;%d;>",abs(ctvpt->next->pe - ctvpt->next->ps + 1),ctvpt->next->ps,ctvpt->next->pe) < 0) {
                         ret = -320;
                         break;
@@ -1525,7 +1553,8 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     int li = 0;
 
                     while (ctnpt->no != ctvpt->next->ps) {
-
+                        l = sprintf(line, "%c",ctnpt->sgn);
+                        strcat(file_content, line);
                         if (fprintf(f,"%c",ctnpt->sgn) < 0) {
                             ret = -320;
                             break;
@@ -1537,7 +1566,8 @@ int CC_InteriorsFindAndSaveToFile(char *ifn, VLt *vlt, NLt *nlt, long long int s
                     }
 
                     if (ret == -320) break;
-
+                    l = sprintf(line, ";%d\n",li);
+                    strcat(file_content, line);
                     if (fprintf(f,";%d\n",li) < 0) {
                         ret = -320;
                         break;
@@ -1676,16 +1706,22 @@ char * PerformTRSCalculation(char *gfn, char* tfn, char* ifn, long long tmin, lo
         printf("\nstatus after LC_TRSPositionsFindAndSaveToVLt: %d", e);
         if (e < 0) ExitNMV(&gl,&ml,&vl,e);
         e = LC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tmin, tmax, file_content);
-        printf("file_content outside: %s", file_content);
         printf("\nstatus after LC_InteriorsFindAndSaveToFile: %d", e);
         if (e < 0) ExitNMV(&gl,&ml,&vl,e);
     } else if (mode==1) {
         // circular case
-        if ((tsize = ImportGenome(gfn,&gl)) < 0) ExitN(&gl,(int)tsize);
-        if ((e = CopyNLt(&gl2, &gl)) < 0) ExitNN(&gl,&gl2,e); JoinNLtWithNLt(&gl,&gl2);
-        if ((len = ImportTRSToMLt(tfn,&ml)) < 0) ExitNM(&gl,&ml,len);
-        if ((e = CC_TRSPositionsFindAndSaveToVLt(&ml,&gl,&vl,len)) < 0) ExitNMV(&gl,&ml,&vl,e);
-        if ((e = CC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tsize,tmin,tmax)) < 0) ExitNMV(&gl,&ml,&vl,e);
+        tsize = ImportGenome(gfn,&gl);
+        printf("\nsize of genome: %d", tsize);
+        if (tsize < 0) ExitN(&gl,(int)tsize);
+        e = CopyNLt(&gl2, &gl);
+        if (e < 0) ExitNN(&gl,&gl2,e); JoinNLtWithNLt(&gl,&gl2);
+        len = ImportTRSToMLt(tfn,&ml);
+        printf("\nsize of input: %d", len);
+        if (len < 0) ExitNM(&gl,&ml,len);
+        e = CC_TRSPositionsFindAndSaveToVLt(&ml,&gl,&vl,len);
+        if (e < 0) ExitNMV(&gl,&ml,&vl,e);
+        e = CC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tsize,tmin,tmax, file_content);
+        if (e < 0) ExitNMV(&gl,&ml,&vl,e);
     } else {
         printf("mode %d not supported (0 - linear, 1 - circular are currently supported)", mode);
     }
@@ -1778,7 +1814,7 @@ int main()
 
                     if ((e = CC_TRSPositionsFindAndSaveToVLt(&ml,&gl,&vl,len)) < 0) ExitNMV(&gl,&ml,&vl,e);
 
-                    if ((e = CC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tsize,tmin,tmax)) < 0) ExitNMV(&gl,&ml,&vl,e);
+                    if ((e = CC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tsize,tmin,tmax, file_content)) < 0) ExitNMV(&gl,&ml,&vl,e);
 
                     printf("END\n\n");
 
