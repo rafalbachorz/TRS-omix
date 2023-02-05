@@ -1696,6 +1696,7 @@ char * PerformTRSCalculation(char *gfn, char* tfn, char* ifn, long long tmin, lo
     char *file_content = (char*)calloc(out_buffer_size, sizeof(char));
     if (mode==0){
         // linear case
+        printf("\nLinear case...");
         tsize = ImportGenome(gfn,&gl);
         printf("\nsize of genome: %d", tsize);
         if (tsize < 0) ExitN(&gl,(int)tsize);
@@ -1710,6 +1711,7 @@ char * PerformTRSCalculation(char *gfn, char* tfn, char* ifn, long long tmin, lo
         if (e < 0) ExitNMV(&gl,&ml,&vl,e);
     } else if (mode==1) {
         // circular case
+        printf("\nCircular case...");
         tsize = ImportGenome(gfn,&gl);
         printf("\nsize of genome: %d", tsize);
         if (tsize < 0) ExitN(&gl,(int)tsize);
@@ -1719,8 +1721,10 @@ char * PerformTRSCalculation(char *gfn, char* tfn, char* ifn, long long tmin, lo
         printf("\nsize of input: %d", len);
         if (len < 0) ExitNM(&gl,&ml,len);
         e = CC_TRSPositionsFindAndSaveToVLt(&ml,&gl,&vl,len);
+        printf("\nstatus after CC_TRSPositionsFindAndSaveToVLt: %d", e);
         if (e < 0) ExitNMV(&gl,&ml,&vl,e);
         e = CC_InteriorsFindAndSaveToFile(ifn,&vl,&gl,tsize,tmin,tmax, file_content);
+        printf("\nstatus after CC_InteriorsFindAndSaveToFile: %d", e);
         if (e < 0) ExitNMV(&gl,&ml,&vl,e);
     } else {
         printf("mode %d not supported (0 - linear, 1 - circular are currently supported)", mode);

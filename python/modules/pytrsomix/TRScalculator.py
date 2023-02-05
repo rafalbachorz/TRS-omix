@@ -42,11 +42,14 @@ class TRScalculator:
 
         self.result = lib.PerformTRSCalculation(pGfn, pTfn, pIfn, tmin, tmax, mode)
         self.result = ffi.string(self.result).decode("utf-8")
-        self.result = StringIO(self.result)
-        self.result = pd.read_csv(self.result, sep=";")
+        if self.result:
+            self.result = StringIO(self.result)
+            self.result = pd.read_csv(self.result, sep=";")
 
-        genom_name = fasta_file_content[0].name
-        self.result[TRS_cols.GENOME_COLUMN.value] = genom_name
+            genom_name = fasta_file_content[0].name
+            self.result[TRS_cols.GENOME_COLUMN.value] = genom_name
+        else:
+            print("The TRS-omix calculations not successful...")
         
     @property
     def Result(self):
