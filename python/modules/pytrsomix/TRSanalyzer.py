@@ -11,7 +11,10 @@ class TRS_cols(Enum):
 class SeqAnalyzer():
     def __init__(self, seqs: list):
         self.seqs = seqs
-        self.seqs_combined = pd.concat(self.seqs, axis=0).reset_index(drop=True)
+        if len(seqs) > 0:
+            self.seqs_combined = pd.concat(self.seqs, axis=0).reset_index(drop=True)
+        else:
+            self.seqs_combined = pd.DataFrame()
 
     def calculate_all_alignments_biopython(self, idx):
         objective_seq = Seq(self.seqs_combined.loc[idx, TRS_cols.SEQ_COLUMN.value])
@@ -24,7 +27,7 @@ class SeqAnalyzer():
             algns.append(a)
         return algns
 
-    def calculate_all_alignments(self, idx):
+    def calculate_all_alignments_nw(self, idx):
         objective_seq = self.seqs_combined.loc[idx, TRS_cols.SEQ_COLUMN.value]
         remaining_seq = self.seqs_combined[TRS_cols.SEQ_COLUMN.value]
         algns = {}
@@ -32,11 +35,26 @@ class SeqAnalyzer():
             a = parasail.nw_scan_16(objective_seq, seq, 1, 1, parasail.blosum75)
             algns[idx] = a
         return algns
+    
+    def calculate_all_alignments_sw(self, idx):
+        objective_seq = self.seqs_combined.loc[idx, TRS_cols.SEQ_COLUMN.value]
+        remaining_seq = self.seqs_combined[TRS_cols.SEQ_COLUMN.value]
+        algns = {}
+        for seq, idx in zip(remaining_seq, remaining_seq.index):
+            a = parasail.sw_scan_16(objective_seq, seq, 1, 1, parasail.blosum75)
+            algns[idx] = a
+        return algns
 
-    def calculate_single_alignment(self, idx, jdx):
+    def calculate_single_alignment_nw(self, idx, jdx):
         seq_idx = self.seqs_combined.loc[idx, TRS_cols.SEQ_COLUMN.value]
         seq_jdx = self.seqs_combined.loc[jdx, TRS_cols.SEQ_COLUMN.value]
         a = parasail.nw_scan_16(seq_idx, seq_jdx, 1, 1, parasail.blosum75)
+        return a
+    
+    def calculate_single_alignment_sw(self, idx, jdx):
+        seq_idx = self.seqs_combined.loc[idx, TRS_cols.SEQ_COLUMN.value]
+        seq_jdx = self.seqs_combined.loc[jdx, TRS_cols.SEQ_COLUMN.value]
+        a = parasail.sw_scan_16(seq_idx, seq_jdx, 1, 1, parasail.blosum75)
         return a
     
     def calculate_single_alignment_biopython(self, idx, jdx):
@@ -56,6 +74,10 @@ class SeqAnalyzer():
     @property
     def Combined(self):
         return self.seqs_combined
+    
+    @Combined.setter
+    def Combined(self, value):
+        self.seqs_combined = value
 
 class AlignmentAnalyzer():
     def __init__(self, algns: dict):
