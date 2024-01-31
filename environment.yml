@@ -1,0 +1,8 @@
+conda:
+pandas
+
+pip:
+cffi
+biopython
+pip install parasail
+ipykernel
