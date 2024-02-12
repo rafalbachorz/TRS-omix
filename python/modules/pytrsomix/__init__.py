@@ -1,2 +1,2 @@
 from .TRScalculator import TRScalculator
-from .TRSanalyzer import SeqAnalyzer, AlignmentAnalyzer
+from .TRSanalyzer import SeqAnalyzer
