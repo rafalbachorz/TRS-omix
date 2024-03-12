@@ -1292,7 +1292,7 @@ class SeqProcessor:
                     print(f'The file {file_path.name} is empty.')
             return sequence_ids_dict,special_dict
     @staticmethod
-    def filter_fasta_file(fasta_file_path,sequence_ids_dict,special_dict,output_directory):
+    def filter_fasta_file_dict(fasta_file_path,sequence_ids_dict,special_dict,output_directory):
         combined_ids = set()
         for ids in sequence_ids_dict.values():
             combined_ids.update(ids)
