@@ -1,23 +1,35 @@
 name: TRS
 
 channels:
-  - defaults
   - conda-forge
   - bioconda
-  - pypi
-
+  - defaults
+  
 dependencies:
   - python=3.6.13
   - biopython=1.78
-  - pandas=1.1.5
   - numpy=1.19.2
+  - pandas=1.1.5
+  - scipy=1.5.3
   - matplotlib=3.3.4
-  - scikit-learn
-  - seaborn
-  - jupyterlab
-  - nb_conda_kernels
-  - ipywidgets
-  - ipyparallel
-  - prometheus_client
-  - parasail-python=1.2
+  - jupyterlab=3.2.1
+  - ipython=7.16.1
+  - tqdm=4.63.0
+  - pillow=8.3.1
+  - seaborn=0.11.2
+  - scikit-learn=0.24.2
+  - ipywidgets=7.6.5
+  - blas=1.0=openblas
+  - libblas=3.9.0=16_linux64_openblas
+  - libcblas=3.9.0=16_linux64_openblas
+  - liblapack=3.9.0=16_linux64_openblas
+  - libopenblas=0.3.21
+  - ca-certificates=2023.12.12
+  - certifi=2021.5.30
+  - libgcc-ng=11.2.0
+  - libstdcxx-ng=11.2.0
+  - libgfortran-ng=11.2.0
+  - libgfortran5=11.2.0
+  - openssl=1.1.1w
+  - pip
 
