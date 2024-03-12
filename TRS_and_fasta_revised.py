@@ -144,7 +144,7 @@ l_chars_max, r_chars_max = SeqProcessor.calculate_sequence_lengths(tmin)
 
 # Adjust the user input to ensure it is within the allowed range
 l_chars = SeqProcessor.adjust_input_to_range(f"Enter the length of sequence to extract from the start (up to {l_chars_max}): ", l_chars_max)
-r_chars = SeqProcessor.adjust_input_to_range(f"Enter the length of sequence to extract from the start (up to {r_chars_max}): ", r_chars_max)
+r_chars = SeqProcessor.adjust_input_to_range(f"Enter the length of sequence to extract from the end (up to {r_chars_max}): ", r_chars_max)
 
 # Use SeqProcessing to extract sequences based on the adjusted lengths
 combined_results = SeqProcessor.extract_sequences(combined_results, l_chars, r_chars)
