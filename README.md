@@ -43,7 +43,7 @@ The content of the repository is derived from its predecessor, available at:
 > 3. **Compilation of TRS-wrapper**: (Request to Mr. Rafal for the exact script needed for compilation)
 
 > [!NOTE]
-> 4. **Usage of `TRS_and_fasta_revised.py`**: This script is used to obtain initial results for subsequent BLAST analysis. Detailed operation described below.Or click [HERE](#trs-and-fasta-revised)
+> 4. **Usage of `TRS_and_fasta_revised.py`**: This script is used to obtain initial results for subsequent BLAST analysis. Detailed operation described below.Or click [HERE](##trs-and-fasta)
 
 5. **Proceed with BLASTING the obtained** `.fasta` sequences against nt database with tabular output format and 100% identity.
 
@@ -54,7 +54,7 @@ The content of the repository is derived from its predecessor, available at:
 
 8. **Usage of `BLAST_part_revised.py`**: This script ...
 
-## TRS_and_fasta_revised
+## TRS and fasta
 
 1. Asks the user for the location of the folder containing `.fasta` files. Full path specification is recommended.
 
