@@ -1,34 +1,107 @@
-# TRS-omix: search engine
+# TRS-omix: Search Engine
 
 This code accompanies the paper:
-Sebastian Sakowski, Marta Majchrzak, Jacek Waldmajer, Pawel Parniewski: TRS-omix: a new search engine for trinucleotide flanked sequences. 2021.
 
-The content of the repository comes from it's predecessor, i.e.:
-https://github.com/TRS-omix/software
+- **Sebastian Sakowski, Marta Majchrzak, Jacek Waldmajer, Pawel Parniewski**: *TRS-omix: a new search engine for trinucleotide flanked sequences*. 2021.
 
-# ToDo's:
-"Proste tematy"
-0. Korekta sekwencji flankującej
-*CGACGACGACG* + analogicznie po prawej strony
+The content of the repository is derived from its predecessor, available at:
+[https://github.com/TRS-omix/software](https://github.com/TRS-omix/software)
 
-1. Przy uruchomieniu programu plik wsadowy z listą genomów, nazwy plików genomowych dowolne
+## ToDo's:
 
-2. W kolumnie O ("FRG NO") - wpis generowany ręcznie, do automatyzacji.
-ciąg znaków z nagłowka pliku fasta (>..." ")  prefix-indeks
+### Simple Tasks
 
-3. Podobieństwo sekwencji w ramach iteriors.txt ("wnętrza")
+1. **Sequence Flanking Correction**: Add flanking sequences (`*CGACGACGACG*`) analogously on the right side. 
 
-# Opisane propozycje znajdują się w pliku Proposed code.ipynb
+2. **Batch File for Genome List**: Upon program startup, the batch file should contain a list of genomes with arbitrary genome file names. ****KIND OF SOLVED**** CURRENT IMPLEMENTATNION ASKS FOR PATH AND READS .FASTA FILES LOCATED THERE 
 
-1. Program pyta użytkownika o lokalizację plików .fasta i odczytuje wszystkie znajdujące się w danym folderze niezależnie od nazwy - ta metoda wydaję się być odrobinę szybsza
-2. Program pyta użytkownika o minimalną oraz maksymalną długość sekwencji jak i również o tryb w którym ma być uruchomiony TRS_omix
-3. Połączone pliki interiors.txt są przechowywane jako DataFrame oraz zapisane do pliku .csv
-4. Program pyta użytkownika o długość sekwencji którą chcę otrzymać zarówno z początku jak i końca sekwencji
-5. Przy użyciu Entrez z Biopython kolumna GENOME służy do przeszukania bazy nucleotide NCBI i znalezienia nazw organizmów
-6. Nazwa organizmu,kierunek z którego pochodzi sekwencja(L/R),L-No/R-No oraz indeks sekwencji są wykorzystywane do stworzenia unikalnych identyfikatorów sekwencji
-7. Uzyskane w ten sposób pliki .fasta clustrujemy przy pomocy cd-hit-est(https://github.com/weizhongli/cdhit) tak aby odnaleźć sekwencje które pokrywają się w 100% usuwamy je z pierwotnego zestawu sekwencji i przenosimy do innego pliku
-8. Blastujemy pozostałe  
+3. **FRG NO Column in Output**: Currently manually generated and needs automation. It should contain a string from the fasta file header (`>..." "`) with a prefix-index. ****SOLVED****
 
-# Inne zmiany 
-1. environment.yml jest teraz skonfigurowany prawidłowo i umożliwia łatwe odtworzenie środowiska przy pomocy condy
-2. dodano brakujące __init__.py
+4. **Sequence Similarity in `interiors.txt` ("Interiors")**: Address similarity of sequences within `interiors.txt`. - ****SOLVED****
+
+5.**Run script with args instead of user input** : Current implementation has low scalability
+
+### Advanced
+
+1.**Introduce a way to resume processing from the last completed step** : Find crucial points in pipeline, after their completion add currently stored variables and info about present files to .json (or other format). Bonus points with args we should instantly know what the name of the folder *should be* so we can instantly do a search (function for it is present) and prompt the user for folder if we find multiple (we are using fnmatch) if .json is found load it. The problem here is that i have no experience with something like this so I'll need help with creating the logic behind it. 
+
+2.**Testing** - the current script was run on limited number of samples from klebsiella, avium, ecoli and citrobacter genomes. We need to test it's capabilities especially after introduction of automated dictionary creation and update. I wrote a short script that downloads a specified number of genomes from a given genus I will include it here. 
+
+3. **Multithreadding** - good idea would be to figure out how to multithread currently present function and test how it goes then rewrite for args
+
+# Operating Mechanism
+> [!IMPORTANT]
+> 1. **Environment Setup with Conda**: The necessary package list for script operation is in `environment.yml`.
+   
+   Quick installation command in terminal: `conda create env -f environment.yml -n TRS`
+
+> [!IMPORTANT]
+> 2. **Activate Environment**: Use `conda activate TRS`. **All further operations should be performed in this environment**.
+
+> [!WARNING]
+> 3. **Compilation of TRS-wrapper**: (Request to Mr. Rafal for the exact script needed for compilation)
+
+> [!NOTE]
+> 4. **Usage of `TRS_and_fasta_revised.py`**: This script is used to obtain initial results for subsequent BLAST analysis. Detailed operation described below.
+
+5. **Proceed with BLASTING the obtained** `.fasta` sequences against nt database with tabular output format and 100% identity.
+
+> [!CAUTION]
+> # ****DO NOT REMOVE/MOVE THE DIRECTORY CREATED BY `TRS_and_fasta_revised.py`****  
+
+6. **Move BLAST results** to blast_output directory (should already be created) in the directory `TRS_and_fasta_revised.py` created.
+
+7.**Usage of `BLAST_part_revised.py`**: This script    
+
+## TRS_and_fasta_revised.py
+
+1. Asks the user for the location of the folder containing `.fasta` files. Full path specification is recommended.
+
+2. Queries additional parameters to be used in TRS-omix (minimum and maximum length, mode).
+
+> [!IMPORTANT]
+> 3. Creates a new path in the folder where the script is located, named according to pattern:
+> 
+>  `inputdirectory_results`
+> 
+> This path will contain all files generated during analysis, dynamically changing to include information about the experiment.
+
+> [!CAUTION]
+> 4. **Do not modify this folder in _any_ way**. Files within it can be copied elsewhere, but the original location and file names must be preserved—at least for now.
+
+> [!NOTE]
+> 5. Upon specifying required parameters and creating the folder, TRS-omix operates, typically taking 1-1.5 hours for 7 genomes. The analysis duration also depends on the maximum length parameter.
+
+> [!IMPORTANT]
+> 6. TRS output is saved in the `TRS_output` folder, with an equivalent to `interiors.txt` from TRS-omix csv file named:
+>
+>   `inputdirectory_results.csv`
+
+
+7. The script then asks how much of the sequence start and end the user wants to extract, with maximum length limited by the minimum sequence length. If the user specifies a value beyond the accepted maximum, they will be informed, and the length will be adjusted.
+
+8. Users are asked for their email which will be used to obtain organism names along with `GENOME` columm of:
+   
+   `inputdirectory_results.csv`
+
+It's best if the `.fasta` files originate from NCBI Nucleotide for compatibility.
+
+9. Extracted sequence fragments are saved to a `.fasta` file named "combined_sequences.fasta", with sequences named according to the scheme:
+
+   `Species_name_L/R{number}`
+
+   Number accompanying L/R are encoded trinucleotide repeats 
+
+10. Each L/R pair receives a number indicating a pair `Species_name_L/R{number}_{pair_number}`, and sequences are saved to `combined_sequences_unique.fasta`.
+
+> [!IMPORTANT]
+> 11. Subsequent operations include clustering with cd-hit (automated if cd-hit is installed or will prompt for path if not found) and setting the desired identity degree.
+> Note that this is one of the most time consuming processes in the current script but highly dependent on desired identity threshold, longest for 0.75 **_very_ short** for 1.0 
+
+12. The script also performs operations on clusters to clean them and obtain sequence IDs to be discarded. cd-hit results are located in the `cd-hit results` folder.
+
+13. Two new fasta files are created in the `filtered_sequences` folder, one containing sequences within clusters and another outside them.
+
+> [!WARNING]
+> 14. These files should then be BLASTed against the nt database with parameters `perc_identity 100 -outfmt 6`.
+
