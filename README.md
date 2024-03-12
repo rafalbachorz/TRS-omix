@@ -96,4 +96,20 @@ The content of the repository is derived from its predecessor, available at:
 > 13. These files should then be BLASTed against the nt database with parameters `perc_identity 100` and `-outfmt 6`.
 
 
+## BLAST processing
+
+> [!CAUTION]
+> 1. Remember to put your blast output files into blast_output directory!
+
+2. Script will attempt to find the blast_output folder on the users machine if multiple are found user will be prompted for selection
+
+> [!NOTE]
+> 3. Extensions will be added to all present files(so keep only blast files here) and unique acession - seqID pairs will be found
+
+4. Further processing will require user to obtain *nucl_gb.accession2taxid* database file from NCBI FTP available at : https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/ download and extract the file. 
+
+5. This database will help us get a quick list of all acession - taxid pairs in our dataset
+
+6. Another column is added to each entry in the blast files containing acession matching TaxID
+7. Ciąg dalszy .....
 
