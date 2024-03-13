@@ -18,11 +18,13 @@ from modules.pytrsomix import TRScalculator, SeqAnalyzer, SeqProcessor
 import matplotlib.pyplot as plt
 from multiprocessing import Pool
 import argparse
+import time
 
 
-# In[2]:
+# In[ ]:
 
 
+start_time = time.time()
 # Hopefully better version of the above
 # Prompt user for directory path
 print("Please provide the directory path where your .fasta files are located.")
@@ -128,6 +130,9 @@ csv_file_path = os.path.join(trs_output_dir, csv_file_name)
 combined_results.to_csv(csv_file_path, index=False)
 
 print(f"Results saved to {csv_file_path}")
+
+trs_time = time.time
+print(f"TRS took {trs_time-start_time} seconds")
 
 
 # In[3]:
@@ -310,7 +315,8 @@ SeqProcessor.write_summary(summary_path,results_directory)
 # In[16]:
 
 
-
+end_time = time.time()
+print(f"Execution time: {end_time - start_time} seconds")
 
 
 # In[22]:

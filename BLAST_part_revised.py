@@ -22,13 +22,13 @@ import re
 import fnmatch
 
 
-# In[2]:
+# In[4]:
 
 
 #Look for blast_output directory
 blast_output_path = SeqProcessor.find_directory_by_name('blast_output')
-blast_output_path= Path(blast_output_path)
-results_directory = blast_output_path.parent
+
+
 if blast_output_path:
     print(f"Selected directory: {blast_output_path}")
 else:
@@ -39,8 +39,11 @@ else:
 #Renames files to .txt and find unique sequence ID - accession pairs  
 SeqProcessor.process_blast_files_in_directory(blast_output_path)
 
+blast_output_path= Path(blast_output_path)
+results_directory = blast_output_path.parent
 
-# In[3]:
+
+# In[ ]:
 
 
 '''
@@ -71,7 +74,7 @@ tax_df.to_csv(output_file, index=False)
 print(f"tax_df saved to {output_file}")
 
 
-# In[4]:
+# In[ ]:
 
 
 '''
@@ -92,7 +95,7 @@ for index, row in tax_df.iterrows():
         taxid_accessions_dict[taxid] = [accession]
 
 
-# In[5]:
+# In[ ]:
 
 
 # Ensure the directory for modified files exists
@@ -129,7 +132,7 @@ for filename in os.listdir(blast_output_path):
         df.to_csv(modified_file_path, sep='\t', index=False, header=False)
 
 
-# In[6]:
+# In[ ]:
 
 
 '''This is still experimental but should allow to load interiors.txt equivalent into a dataframe to construct the
@@ -146,7 +149,7 @@ else:
 combined_results = pd.read_csv(results_file)
 
 
-# In[7]:
+# In[ ]:
 
 
 '''
@@ -160,7 +163,7 @@ Retrieves organism names first, then retrieves taxids for those IDs, creates a n
 tax_map = SeqProcessor.fetch_organism_taxids(ncbi_ids)
 
 
-# In[8]:
+# In[ ]:
 
 
 '''
@@ -170,62 +173,68 @@ Should get rid of strains and make it possible to find the taxid of the species 
 filtered_organism_taxid_map = {SeqProcessor.filter_key_parts(key): value for key, value in tax_map.items()}
 
 
-# In[9]:
+# In[ ]:
 
 
 filtered_organism_taxid_map 
 
 
-# In[10]:
+# In[ ]:
 
 
+'''Adds additional taxids after clearing out the strain associated info in current klebsiella dataset 
+because of that Klebsiella_pneumoniae_subsp._pneumoniae has two taxids one strain specific and the one associated with subspecies'''
 species_info = SeqProcessor.append_taxids_to_filtered_map(filtered_organism_taxid_map)
-
-
-# In[11]:
-
-
-SeqProcessor.interact_and_update_dict(filtered_organism_taxid_map)
-
-
-# In[12]:
-
-
-species_info = SeqProcessor.append_taxids_to_filtered_map(filtered_organism_taxid_map)
-species_info
-
-
-# In[13]:
-
-
-species_info = {SeqProcessor.filter_key_parts(key): value for key, value in species_info.items()}
-
-
-# In[14]:
-
-
-modified_blast_path = os.path.join(blast_output_path, "modified_blast")
-nan_file = os.path.join(modified_blast_path,"NaN acessions.csv")
-# Construct dictionary of all taxid - acessions pairs in our data
-results_dict = SeqProcessor.construct_dict_from_files(modified_blast_path,nan_file)
 
 
 # In[ ]:
 
 
+'''Additional NCBI IDs can be provided to include their taxids in the dictionary used for filtering down the line
+Most useful to add top level species in case of klebsiella 573 - klebsiella pneumoniae'''
+SeqProcessor.interact_and_update_dict(filtered_organism_taxid_map)
 
 
+# In[ ]:
 
-# In[15]:
+
+'''Create species_info dictionary that contains keys as species/subspecies/strains and values as sets of taxids'''
+species_info = SeqProcessor.append_taxids_to_filtered_map(filtered_organism_taxid_map)
+species_info
 
 
+# In[ ]:
+
+
+'''Once again cleaning the names in case we added strains and we dont want to miss valid sequences because of that'''
+species_info = {SeqProcessor.filter_key_parts(key): value for key, value in species_info.items()}
+
+
+# In[ ]:
+
+
+'''Construct a dictionary from analyzed files that includes seqID as key and taxids as sets of values
+add NaN file for entries that had no valid taxids associated with them it's a sign that either blast database or taxonomy db needs updating'''
+modified_blast_path = os.path.join(blast_output_path, "modified_blast")
+nan_file = os.path.join(modified_blast_path,"NaN acessions.csv")
+# Construct dictionary of all taxid - acessions pairs in our data
+results_dict = SeqProcessor.construct_dict_from_files(modified_blast_path,nan_file)
+'''Most of the time the given sequence is still preserved in the results its presence in the NaN file simply means that one of the acessions got deleted/updated'''
+
+
+# In[ ]:
+
+
+'''We can add exceptions now didn't try it with files though probably 
+should try to introduce the same ability for interact_and_update_dict'''
 exceptions = SeqProcessor.ask_for_exceptions()
 print(f"Exceptions to filtering added: {exceptions}")
 
 
-# In[16]:
+# In[ ]:
 
 
+'''Convert values to int'''
 for key, value_set in results_dict.items():
     results_dict[key] = {int(val) for val in value_set}    
     
@@ -233,93 +242,96 @@ for key, value_set in species_info.items():
     species_info[key] = {int(val) for val in value_set}    
 
 
-# In[17]:
+# In[ ]:
 
 
 exceptions
 
 
-# In[18]:
+# In[ ]:
 
 
+'''This filtering step does the following:
+1. Looks through all key-value set pairs in results_dict
+2. If one of the values in the set is in exception removes it from the set(but remembers it)
+3. If leftover values match atleast one present in species_info 
+AND it's the only one associated with a given sequence the record is kept
+4. That means that the records which had more than one value associated with it but the other ones were exceptions
+are preserved
+5.Unfortunetely this didnt help with the Klebsiella_pneumoniae_subsp._pneumoniae completely disappearing from the dataset
+6. Still this is not a bug but expected behaviour as KP sequences match to A LOT of taxids'''
 filtered_keys = SeqProcessor.filter_with_exceptions(results_dict,species_info,exceptions)
 
 filtered_keys
 
 
-# In[19]:
+# In[ ]:
 
 
+'''Should probably get rid of that but i want to see what happens if we have multi value sets. Did not happen so far.
+If errors are encountered at this step just comment out the code and include filtered_keys_final = filtered_keys'''
 filtered_keys_final = SeqProcessor.unpack_single_element_sets(filtered_keys)
 filtered_keys_final
 
 
-# In[20]:
+# In[ ]:
 
 
+'''Write out to a file a list of rows containing the keys listed in filtered_keys_final'''
 SeqProcessor.process_files_with_filter(modified_blast_path,filtered_keys_final)
 
 
-# In[21]:
+# In[ ]:
 
 
+'''Summary function is used here it stores various info about the pipeline - still WIP'''
 summary_dir = os.path.join(results_directory,"summary")
 SeqProcessor.ensure_directory_exists(summary_dir)
 summary_path = os.path.join(summary_dir,"summary.txt")
 SeqProcessor.write_summary(summary_path,results_directory)
 
 
-# In[22]:
+# In[ ]:
 
 
+'''Kind of unecessary - there is a simpler way but i have a stable pipeline now and Ill use it to run some experiments'''
 fasta_processed_path = SeqProcessor.find_file_by_name('unique_taxids_filtered_sequences_combined_unique_blastn_out.txt',auto= True, folder= results_directory)
 fasta_processed_path = Path(fasta_processed_path)
 fasta_processed_path = fasta_processed_path.parent
 fasta_processed_path
 
 
-# In[24]:
+# In[ ]:
 
 
+'''My naming convention is getting a little bit confusing... if someone wants to fix it go ahead
+This function finds twins in our files (the ones with the same number at the end) 
+sequences from the same initial sequence keeps them if it find 2'''
 SeqProcessor.filter_and_overwrite_files_in_directory(fasta_processed_path,file_pattern="*.txt")
 
 
-# In[28]:
-
-
-filtered_fasta_path = SeqProcessor.find_directory_by_name_new('filtered_sequences', auto= True, folder = results_directory)
-
-
-# In[34]:
-
-
-filtered_fasta_file = SeqProcessor.find_file_by_name('filtered_sequences_combined_unique.fasta', auto=True, folder = results_directory)
-
-
-# In[25]:
+# In[ ]:
 
 
 unique_directory = SeqProcessor.find_directory_by_name_new('unique_sequences', auto = True, folder=results_directory)
 
 
-# In[27]:
+# In[ ]:
 
 
 sequence_ids_dict, special_dict = SeqProcessor.read_sequence_ids(unique_directory)
 
 
-# In[37]:
+# In[ ]:
 
 
-
-
-
-# In[38]:
-
-
+'''Gets sequence of given id from initial .fasta file (still dealing with short sequences) 
+a new function could be written that afterwards strips the numbers from the 'twins' file and uses
+the *_results.csv dataframe this way the full sequences can be extracted'''
 output_directory = os.path.join(results_directory,"final_output")
+filtered_fasta_file = SeqProcessor.find_file_by_name('filtered_sequences_combined_unique.fasta', auto= True, folder= results_directory)
 SeqProcessor.ensure_directory_exists(output_directory)
-SeqProcessor.filter_fasta_file(filtered_fasta_file,sequence_ids_dict,special_dict,output_directory)
+SeqProcessor.filter_fasta_file_dict(filtered_fasta_file,sequence_ids_dict,special_dict,output_directory)
 
 
 # In[ ]:
