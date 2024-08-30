@@ -10,13 +10,13 @@ The content of the repository is derived from its predecessor, available at:
 ## Overview
 
 > [!NOTE]
->1. **`TRS_part.py`**: This script is used to obtain initial results for subsequent BLAST analysis.
-
->2. **`TRS_BLAST.sh`** BLASTS sequences from a specific directory against nt database at 100% identity threshold.
-
->3. **`Blast_part.py`**: This script is used to obtain final results from BLAST files. 
-
->4. **Combined pipeline using `combined.py`**: This script executes all the steps above including the BLASTing step and automatically detects which version of the script to use depending on slurm availability (as of now threads and memory parameters can be changed only in the scripts themselves)
+> 1. **`TRS_part.py`**: This script is used to obtain initial results for subsequent BLAST analysis.
+>
+> 2. **`TRS_BLAST.sh`** BLASTS sequences from a specific directory against nt database at 100% identity threshold.
+>
+> 3. **`Blast_part.py`**: This script is used to obtain final results from BLAST files. 
+>
+> 4. **Combined pipeline using `combined.py`**: This script executes all the steps above including the BLASTing step and automatically detects which version of the script to use depending on slurm availability (as of now threads and memory parameters can be changed only in the scripts themselves)
 
 ## Requirements:
 
@@ -38,7 +38,7 @@ The content of the repository is derived from its predecessor, available at:
 > [!IMPORTANT]
 > 1. **Activate Environment**: Use `conda activate TRS`. **All further operations should be performed in this environment**.
 
-
+> 2. **Use -h with various scripts to see which arguments are optional and which are required for execution as well as descriptions of arugments**
 
 ## ToDo's:
 
