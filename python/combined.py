@@ -231,7 +231,6 @@ def main():
     cd_hit_results_folder = os.path.join(results_directory, "cd-hit-results")
     FileHandler.ensure_directory_exists(cd_hit_results_folder)
     cd_hit_output_file = os.path.join(cd_hit_results_folder, "combined_sequences_unique_cdhit")
-    #automatic finding does not work as expected - meaning that it doesn't work at all
     cd_hit_path = args.cd_hit_path
 
     results_directory = SequenceProcessor.run_cdhit(cd_hit_path, input_file=fasta_files_with_flanks_unique, output_file=cd_hit_output_file,
@@ -259,9 +258,9 @@ def main():
     FileHandler.filter_fasta_file(fasta_files_with_flanks_unique, fasta_with_clustered_ids_removed, fasta_ids_to_remove_because_they_were_in_clusters)
     FileHandler.filter_fasta_file_clusters(fasta_files_with_flanks_unique, fasta_with_clustered_ids_included, fasta_ids_to_remove_because_they_were_in_clusters)
     
-    # Paths to your SLURM script and fallback script
+    # Paths to your SLURM and fallback script
     slurm_script = 'TRS_BLAST.sh'
-    fallback_script = 'path_to_your_fallback_script.sh'
+    fallback_script = 'TRS_BLAST_NOSLURM.sh'
 
     # Set the paths to the query directory and BLAST database
     query_dir = sequences_after_clusters_filtering_folder  # Replace with your actual path
