@@ -13,21 +13,9 @@ The content of the repository is derived from its predecessor, available at:
 
 1. **Sequence Flanking Correction**: Add flanking sequences (`*CGACGACGACG*`) analogously on the right side. 
 
-2. **Batch File for Genome List**: Upon program startup, the batch file should contain a list of genomes with arbitrary genome file names. **KIND OF SOLVED** CURRENT IMPLEMENTATION ASKS FOR PATH AND READS .FASTA FILES LOCATED THERE 
-
-3. **FRG NO Column in Output**: Currently manually generated and needs automation. It should contain a string from the fasta file header (`>..." "`) with a prefix-index. **SOLVED**
-
-4. **Sequence Similarity in `interiors.txt` ("Interiors")**: Address similarity of sequences within `interiors.txt`. **SOLVED**
-
-5. **Run script with args instead of user input**: Current implementation has low scalability.
-
 ### Advanced
 
 1. **Introduce a way to resume processing from the last completed step**: Find crucial points in pipeline, after their completion add currently stored variables and info about present files to .json (or other format). Bonus points with args we should instantly know what the name of the folder *should be* so we can instantly do a search (function for it is present) and prompt the user for folder if we find multiple (we are using fnmatch) if .json is found load it. The problem here is that i have no experience with something like this so I'll need help with creating the logic behind it. 
-
-2. **Testing**: the current script was run on limited number of samples from klebsiella, avium, ecoli and citrobacter genomes. We need to test it's capabilities especially after introduction of automated dictionary creation and update. I wrote a short script that downloads a specified number of genomes from a given genus I will include it here. 
-
-3. **Multithreading**: good idea would be to figure out how to multithread currently present function and test how it goes then rewrite for args.
 
 # Operating Mechanism
 
@@ -43,23 +31,44 @@ The content of the repository is derived from its predecessor, available at:
 > 3. **Compilation of TRS-wrapper**: (Request to Mr. Rafal for the exact script needed for compilation)
 
 > [!NOTE]
-> 4. **Usage of `TRS_and_fasta_revised.py`**: This script is used to obtain initial results for subsequent BLAST analysis. Detailed operation described below.Or click [HERE](#trs-and-fasta)
-
-5. **Proceed with BLASTING the obtained** `.fasta` sequences against nt database with tabular output format and 100% identity.
+> 4. **Usage of `TRS_part.py`**: This script is used to obtain initial results for subsequent BLAST analysis. Detailed operation described below.Or click [HERE](#trs-and-fasta)
+> 5. **Proceed with BLASTING the obtained** `.fasta` sequences against nt database with tabular output format and 100% identity. Using TRS_BLAST.sh (slurm version)
+> 6. **Usage of `Blast_part.py`**: This script is used to obtain final results from blast files
+> 7. **Combined pipeline using `combined.py`**: This script executes all the steps above including the BLASTing step and automatically detects which version of the script to use depending on slurm availability (as of now threads and memory parameters can be changed only in the scripts themselves)
 
 > [!CAUTION]
-> 6. **DO NOT REMOVE/MOVE THE DIRECTORY CREATED BY `TRS_and_fasta_revised.py`**
-
-7. **Move BLAST results** to the blast_output directory (should already be created) in the directory `TRS_and_fasta_revised.py` created.
-
-8. **Usage of `BLAST_part_revised.py`**: This script ...
+> 8. **DO NOT REMOVE/MOVE THE DIRECTORY CREATED AFTER RUNNING THE SCRIPTS**
 
 ## TRS and fasta
+usage: TRS_part.py [-h] --input_fasta_folder_path INPUT_FASTA_FOLDER_PATH
+                   --tmin TMIN --tmax TMAX --mode MODE [--redo] [--cont]
+                   --email EMAIL --threshold THRESHOLD --length_to_extract
+                   LENGTH_TO_EXTRACT [--cd_hit_path CD_HIT_PATH]
 
-1. Asks the user for the location of the folder containing `.fasta` files. Full path specification is recommended.
+This program extracts TRS sequences from a series of input genomes, allows for
+length selection of extracted fragments, and prepares sequences for further
+analysis.
 
-2. Queries additional parameters to be used in TRS-omix (minimum and maximum length, mode).
-
+optional arguments:
+  -h, --help            show this help message and exit
+  --input_fasta_folder_path INPUT_FASTA_FOLDER_PATH
+                        Path to a folder containing genomes in fasta format
+                        from which TRS sequences will be extracted[REQUIRED]
+  --tmin TMIN           Minimum length of TRS sequences[REQUIRED]
+  --tmax TMAX           Maximum length of TRS sequences[REQUIRED]
+  --mode MODE           Mode of operation, must be 0 or 1[REQUIRED]
+  --redo                Redo the analysis if results directory already exists[NOT IMPLEMENTED]
+  --cont                Continue the analysis from saved TRS results file[NOT IMPLEMENTED]
+  --email EMAIL         Address e-mail to be used for connection with NCBI[REQUIRED]
+                        databases
+  --threshold THRESHOLD
+                        Identity threshold for clustering using cdhit has to
+                        be between 0.8 and 1.0[REQUIRED]
+  --length_to_extract LENGTH_TO_EXTRACT
+                        Length of flanking sequences to be extracted from the
+                        full TRS sequence[REQUIRED]
+  --cd_hit_path CD_HIT_PATH
+                        Path to the cd-hit-est executable
 > [!IMPORTANT]
 > 3. Creates a new path in the folder where the script is located, named according to the pattern:
 >    
