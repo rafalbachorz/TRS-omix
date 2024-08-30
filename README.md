@@ -37,7 +37,7 @@ The content of the repository is derived from its predecessor, available at:
 
 > [!IMPORTANT]
 > 1. **Activate Environment**: Use `conda activate TRS`. **All further operations should be performed in this environment**.
-
+>
 > 2. **Use -h with various scripts to see which arguments are optional and which are required for execution as well as descriptions of arugments**
 
 ## ToDo's:
