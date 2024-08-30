@@ -32,8 +32,11 @@ The content of the repository is derived from its predecessor, available at:
 
 > [!NOTE]
 > 4. **Usage of `TRS_part.py`**: This script is used to obtain initial results for subsequent BLAST analysis. Detailed operation described below.Or click [HERE](#trs-and-fasta)
+> 
 > 5. **Proceed with BLASTING the obtained** `.fasta` sequences against nt database with tabular output format and 100% identity. Using TRS_BLAST.sh (slurm version)
+>
 > 6. **Usage of `Blast_part.py`**: This script is used to obtain final results from blast files
+>
 > 7. **Combined pipeline using `combined.py`**: This script executes all the steps above including the BLASTing step and automatically detects which version of the script to use depending on slurm availability (as of now threads and memory parameters can be changed only in the scripts themselves)
 
 > [!CAUTION]
