@@ -1,0 +1,7 @@
+setup.py
+trsomix_wrapper.py
+trsomix_wrapper.egg-info/PKG-INFO
+trsomix_wrapper.egg-info/SOURCES.txt
+trsomix_wrapper.egg-info/dependency_links.txt
+trsomix_wrapper.egg-info/requires.txt
+trsomix_wrapper.egg-info/top_level.txt
